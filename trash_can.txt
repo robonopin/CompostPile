@@ -1,0 +1,103 @@
+//X:40red=switch, 27green=force, 15red=elec, 1yellow=5V
+//A20=elec
+//A43=switch
+//C43=analog1
+//E20=analog2
+//G47=force
+//J47=analog0
+#include <AFMotor.h>
+int onoffPort = 1; // set port number for the On/Off switch
+int onoffval; // integer for value from On/Off switch
+int elecPort = 2; // set port number for electric circuit switch
+int elecval; // integer for value from electric circuit switch
+int weightPort = 0; // set port number for force sensor
+int weight; //interger for value from force sensor
+
+AF_DCMotor motor(4, MOTOR12_64KHZ); // create motor #4, 64KHz pwm
+
+void setup() {
+  motor.setSpeed(100); // set the speed to 200/255
+  Serial.begin(9600);
+  pinMode(onoffPort, INPUT);
+  pinMode(elecPort, INPUT);
+}
+void loop() {
+  onoffval = analogRead(onoffPort);
+  if (onoffval > 0) {
+    Serial.println("On ");
+    motor.run(FORWARD);
+    delay(2000);
+    motor.run(RELEASE);
+    delay(200);
+    motor.run(BACKWARD);
+    delay(500);
+    motor.run(RELEASE);
+    On();
+  }
+  else {
+    Serial.println("Off");
+    motor.run(RELEASE);
+  }
+}
+
+void On() {
+  elecval = analogRead(elecPort);
+    for (int i=0; i<16; i++) {
+      Serial.println(i);
+      elecval = analogRead(elecPort);
+      if (elecval>0) {
+        Serial.println("Al or Ti");
+        motor.run(FORWARD);
+        delay(1000);
+        motor.run(BACKWARD);
+        delay(2000);
+        motor.run(RELEASE);
+        AlTi();
+        break;
+        delay (100);
+      }
+      else {
+        if (i==15) {
+          Serial.println("Gl or Pl");
+          motor.run(FORWARD);
+          delay(1000);
+          motor.run(BACKWARD);
+          delay(2000);
+          motor.run(RELEASE);
+          GlPl();
+          delay(100);
+        }
+      }
+    delay(250);
+  }
+}
+
+void AlTi() {
+  delay(5000);
+  weight = analogRead(weightPort);
+  Serial.print("Weight=");
+  Serial.println(weight);
+  if (weight > 150) {
+    Serial.println("Tin ");
+    delay(100);
+  }
+  else {
+    Serial.println("Aluminum ");
+    delay(100);
+  }
+}
+
+void GlPl() {
+  delay(5000);
+    weight = analogRead(weightPort);
+    Serial.print("Weight=");
+    Serial.println(weight);
+  if (weight > 500) {
+    Serial.println("Glass");
+    delay(100);
+  }
+  else {
+    Serial.println("Plastic");
+    delay(100);
+  }
+}
